@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daily Tracker</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #4f46e5;
+            --secondary: #f9fafb;
+            --highlight: #fde68a;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+        }
+        
+        .today-box {
+            box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.3), 0 2px 4px -1px rgba(79, 70, 229, 0.1);
+        }
+        
+        .completed {
+            position: relative;
+            background-color: rgba(16, 185, 129, 0.1);
+        }
+        
+        .completed::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background-color: #10b981;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+        
+        .log-entry:not(:last-child) {
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        @media (max-width: 768px) {
+            .calendar-day {
+                font-size: 0.8rem;
+            }
+        }
+    </style>
+</head>
+<body class="min-h-screen p-4 md:p-8">
+    <div class="max-w-4xl mx-auto">
+        <header class="mb-8">
+            <h1 class="text-3xl md:text-4xl font-bold text-gray-800">Daily Tracker</h1>
+            <p class="text-gray-600 mt-2">Mark your progress day by day</p>
+        </header>
+        
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- Calendar Section -->
+            <div class="lg:col-span-2 bg-white rounded-xl shadow-md overflow-hidden">
+                <div class="p-6">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-xl font-semibold text-gray-800" id="current-month-year"></h2>
+                    </div>
+                    
+                    <div class="grid grid-cols-7 gap-2 mb-4">
+                        <div class="text-center font-medium text-gray-500">Sun</div>
+                        <div class="text-center font-medium text-gray-500">Mon</div>
+                        <div class="text-center font-medium text-gray-500">Tue</div>
+                        <div class="text-center font-medium text-gray-500">Wed</div>
+                        <div class="text-center font-medium text-gray-500">Thu</div>
+                        <div class="text-center font-medium text-gray-500">Fri</div>
+                        <div class="text-center font-medium text-gray-500">Sat</div>
+                    </div>
+                    
+                    <div class="grid grid-cols-7 gap-2" id="calendar-grid">
+                        <!-- Days will be populated by JavaScript -->
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Today's Action Section -->
+            <div class="bg-white rounded-xl shadow-md overflow-hidden">
+                <div class="p-6">
+                    <div class="text-center mb-6">
+                        <div class="text-4xl font-bold text-indigo-600" id="today-date"></div>
+                        <div class="text-lg font-medium text-gray-600" id="today-day"></div>
+                        <div class="text-gray-500 mt-1" id="today-year"></div>
+                    </div>
+                    
+                    <div class="flex justify-center">
+                        <button id="mark-button" class="px-6 py-3 rounded-lg font-medium text-white bg-indigo-600 hover:bg-indigo-700 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
+                            Mark as Completed
+                        </button>
+                    </div>
+                    
+                    <div class="mt-8">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4">Today's Note</h3>
+                        <textarea id="daily-note" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" rows="4" placeholder="Add a note about your day..."></textarea>
+                        <button id="save-note-button" class="mt-2 px-4 py-2 rounded-lg font-medium text-white bg-indigo-600 hover:bg-indigo-700 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
+                            Save Note
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Activity Log Section -->
+        <div class="mt-10 bg-white rounded-xl shadow-md overflow-hidden">
+            <div class="p-6">
+                <h2 class="text-2xl font-semibold text-gray-800 mb-4">Activity Log</h2>
+                <div class="space-y-4" id="activity-log">
+                    <!-- Log entries will be populated by JavaScript -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // DOM elements
+        const calendarGrid = document.getElementById('calendar-grid');
+        const currentMonthYear = document.getElementById('current-month-year');
+        const todayDate = document.getElementById('today-date');
+        const todayDay = document.getElementById('today-day');
+        const todayYear = document.getElementById('today-year');
+        const markButton = document.getElementById('mark-button');
+        const dailyNote = document.getElementById('daily-note');
+        const saveNoteButton = document.getElementById('save-note-button');
+        const activityLog = document.getElementById('activity-log');
+        
+        // State
+        let completedDates = JSON.parse(localStorage.getItem('completedDates')) || {};
+        let notes = JSON.parse(localStorage.getItem('dailyNotes')) || {};
+        const today = new Date();
+        
+        // Initialize
+        function init() {
+            // Set today's date display
+            todayDate.textContent = today.getDate();
+            todayDay.textContent = today.toLocaleDateString('en-US', { weekday: 'long' });
+            todayYear.textContent = today.getFullYear();
+            
+            // Generate calendar
+            generateCalendar(today);
+            
+            // Load activity log
+            loadActivityLog();
+            
+            // Check if today is already marked
+            checkIfTodayMarked();
+            
+            // Set up event listeners
+            markButton.addEventListener('click', markToday);
+            saveNoteButton.addEventListener('click', saveNote);
+        }
+        
+        // Generate calendar
+        function generateCalendar(date) {
+            calendarGrid.innerHTML = '';
+            currentMonthYear.textContent = date.toLocaleDateString('en-US', { 
+                month: 'long', 
+                year: 'numeric' 
+            });
+            
+            const firstDayOfMonth = new Date(date.getFullYear(), date.getMonth(), 1);
+            const lastDayOfMonth = new Date(date.getFullYear(), date.getMonth() + 1, 0);
+            
+            const daysInMonth = lastDayOfMonth.getDate();
+            const startDay = firstDayOfMonth.getDay();
+            
+            // Add empty cells for days before the first day of the month
+            for (let i = 0; i < startDay; i++) {
+                const emptyCell = document.createElement('div');
+                calendarGrid.appendChild(emptyCell);
+            }
+            
+            // Add days of the month
+            for (let i = 1; i <= daysInMonth; i++) {
+                const dayCell = document.createElement('div');
+                dayCell.className = 'calendar-day p-2 rounded-lg text-center cursor-pointer';
+                
+                // Check if this day is today
+                const thisDay = new Date(date.getFullYear(), date.getMonth(), i);
+                const dateKey = formatDateKey(thisDay);
+                
+                if (isSameDay(thisDay, today)) {
+                    dayCell.classList.add('today-box', 'bg-indigo-100', 'text-indigo-800', 'font-semibold');
+                } else {
+                    dayCell.classList.add('hover:bg-gray-100');
+                }
+                
+                // Check if this day is completed
+                if (completedDates[dateKey]) {
+                    dayCell.classList.add('completed');
+                }
+                
+                dayCell.textContent = i;
+                dayCell.addEventListener('click', () => showDayInfo(thisDay));
+                
+                calendarGrid.appendChild(dayCell);
+            }
+        }
+        
+        // Format date as YYYY-MM-DD for storage
+        function formatDateKey(date) {
+            return `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`;
+        }
+        
+        // Check if two dates are the same day
+        function isSameDay(date1, date2) {
+            return date1.getFullYear() === date2.getFullYear() &&
+                   date1.getMonth() === date2.getMonth() &&
+                   date1.getDate() === date2.getDate();
+        }
+        
+        // Check if today is already marked
+        function checkIfTodayMarked() {
+            const todayKey = formatDateKey(today);
+            if (completedDates[todayKey]) {
+                markButton.disabled = true;
+                markButton.textContent = 'Completed Today';
+                markButton.classList.remove('bg-indigo-600', 'hover:bg-indigo-700');
+                markButton.classList.add('bg-green-600', 'cursor-not-allowed');
+            }
+            
+            // Load today's note if it exists
+            if (notes[todayKey]) {
+                dailyNote.value = notes[todayKey];
+            }
+        }
+        
+        // Mark today as completed
+        function markToday() {
+            const todayKey = formatDateKey(today);
+            
+            if (!completedDates[todayKey]) {
+                completedDates[todayKey] = true;
+                localStorage.setItem('completedDates', JSON.stringify(completedDates));
+                
+                // Update UI
+                markButton.disabled = true;
+                markButton.textContent = 'Completed Today';
+                markButton.classList.remove('bg-indigo-600', 'hover:bg-indigo-700');
+                markButton.classList.add('bg-green-600', 'cursor-not-allowed');
+                
+                // Update calendar
+                markCalendarDay(today);
+                
+                // Add to activity log
+                addToActivityLog(today, 'marked as completed');
+            }
+        }
+        
+        // Mark calendar day visually
+        function markCalendarDay(date) {
+            const days = calendarGrid.children;
+            const dayIndex = date.getDate() + new Date(date.getFullYear(), date.getMonth(), 1).getDay() - 1;
+            
+            if (days[dayIndex]) {
+                days[dayIndex].classList.add('completed');
+            }
+        }
+        
+        // Save daily note
+        function saveNote() {
+            const todayKey = formatDateKey(today);
+            notes[todayKey] = dailyNote.value;
+            localStorage.setItem('dailyNotes', JSON.stringify(notes));
+            
+            // Add to activity log if there's content
+            if (dailyNote.value.trim()) {
+                addToActivityLog(today, 'saved a note');
+            }
+            
+            // Show confirmation
+            const confirmation = document.createElement('div');
+            confirmation.className = 'text-green-600 text-sm mt-2';
+            confirmation.textContent = 'Note saved successfully!';
+            saveNoteButton.after(confirmation);
+            
+            setTimeout(() => {
+                confirmation.remove();
+            }, 3000);
+        }
+        
+        // Add entry to activity log
+        function addToActivityLog(date, action) {
+            const logEntry = document.createElement('div');
+            logEntry.className = 'log-entry p-3 bg-gray-50 rounded-lg';
+            
+            const dateStr = date.toLocaleDateString('en-US', { 
+                weekday: 'short', 
+                month: 'short', 
+                day: 'numeric',
+                year: 'numeric'
+            });
+            
+            const timeStr = date.toLocaleTimeString('en-US', {
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+            
+            logEntry.innerHTML = `
+                <div class="flex justify-between items-center">
+                    <span class="font-medium">${dateStr} at ${timeStr}</span>
+                    <span class="text-xs bg-indigo-100 text-indigo-800 px-2 py-1 rounded-full">${action}</span>
+                </div>
+            `;
+            
+            // Add to the top of the log
+            if (activityLog.firstChild) {
+                activityLog.insertBefore(logEntry, activityLog.firstChild);
+            } else {
+                activityLog.appendChild(logEntry);
+            }
+        }
+        
+        // Load activity log from storage
+        function loadActivityLog() {
+            // Clear existing log
+            activityLog.innerHTML = '';
+            
+            // Get all dates that have activity (completed or notes)
+            const allDates = new Set([
+                ...Object.keys(completedDates),
+                ...Object.keys(notes)
+            ]);
+            
+            // Convert to array of dates and sort descending
+            const sortedDates = Array.from(allDates)
+                .map(key => {
+                    const parts = key.split('-');
+                    return new Date(parts[0], parts[1] - 1, parts[2]);
+                })
+                .sort((a, b) => b - a);
+            
+            // Add entries to log
+            sortedDates.forEach(date => {
+                const dateKey = formatDateKey(date);
+                if (completedDates[dateKey]) {
+                    addToActivityLog(date, 'marked as completed');
+                }
+                
+                if (notes[dateKey] && notes[dateKey].trim()) {
+                    addToActivityLog(date, 'saved a note');
+                }
+            });
+        }
+        
+        // Show info for selected day
+        function showDayInfo(date) {
+            const dateKey = formatDateKey(date);
+            let message = `${date.toLocaleDateString('en-US', { 
+                weekday: 'long', 
+                month: 'long', 
+                day: 'numeric',
+                year: 'numeric'
+            })}`;
+            
+            if (completedDates[dateKey]) {
+                message += ' - Completed';
+            }
+            
+            if (notes[dateKey]) {
+                message += `\n\nNote: ${notes[dateKey]}`;
+            }
+            
+            alert(message);
+        }
+        
+        // Initialize the app
+        init();
+    </script>
+</body>
+</html>
