@@ -18,33 +18,125 @@
             background-color: #f3f4f6;
         }
         
-        .today-box {
-            box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.3), 0 2px 4px -1px rgba(79, 70, 229, 0.1);
+        /* Enhanced card shadows for more depth */
+        .card-shadow {
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
         }
         
+        /* Sharper today-box shadow with more depth and subtlety */
+        .today-box {
+            box-shadow: 0 8px 25px -5px rgba(79, 70, 229, 0.25), 0 4px 10px -3px rgba(79, 70, 229, 0.15);
+            transition: all 0.3s ease;
+        }
+        
+        /* Enhanced completed state with better visual distinction */
         .completed {
             position: relative;
-            background-color: rgba(16, 185, 129, 0.1);
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(5, 150, 105, 0.08));
+            border: 2px solid rgba(16, 185, 129, 0.3);
+            transition: all 0.3s ease;
         }
         
         .completed::after {
-            content: '';
+            content: '✓';
             position: absolute;
-            left: 0;
-            right: 0;
-            height: 2px;
+            right: 4px;
+            top: 4px;
+            width: 16px;
+            height: 16px;
             background-color: #10b981;
-            top: 50%;
-            transform: translateY(-50%);
+            color: white;
+            border-radius: 50%;
+            font-size: 10px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            line-height: 1;
+        }
+        
+        /* Smooth transitions for interactive elements */
+        .calendar-day {
+            transition: all 0.2s ease;
+            border-radius: 8px;
+        }
+        
+        .calendar-day:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px -2px rgba(0, 0, 0, 0.15);
+        }
+        
+        /* Enhanced button styles with better focus rings */
+        .btn-primary {
+            transition: all 0.3s ease;
+            border-radius: 10px;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 8px 20px -4px rgba(79, 70, 229, 0.4);
+        }
+        
+        .btn-primary:focus {
+            outline: none;
+            ring: 3px solid rgba(79, 70, 229, 0.3);
+            border-color: #4f46e5;
+        }
+        
+        /* Improved textarea focus styling */
+        .textarea-enhanced {
+            transition: all 0.3s ease;
+            border-radius: 8px;
+        }
+        
+        .textarea-enhanced:focus {
+            outline: none;
+            border-color: #4f46e5;
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1), 0 4px 12px -2px rgba(79, 70, 229, 0.15);
+            transform: translateY(-1px);
+        }
+        
+        /* Enhanced log entry styling */
+        .log-entry {
+            transition: all 0.2s ease;
+            border-radius: 8px;
+        }
+        
+        .log-entry:hover {
+            background-color: #f8fafc;
+            transform: translateX(4px);
+            box-shadow: 0 4px 12px -2px rgba(0, 0, 0, 0.1);
         }
         
         .log-entry:not(:last-child) {
             border-bottom: 1px solid #e5e7eb;
         }
         
+        /* Enhanced mobile responsiveness */
         @media (max-width: 768px) {
             .calendar-day {
                 font-size: 0.8rem;
+                padding: 6px;
+            }
+            
+            .card-shadow {
+                box-shadow: 0 4px 15px -3px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.05);
+            }
+            
+            .btn-primary {
+                padding: 12px 24px;
+                font-size: 0.9rem;
+            }
+        }
+        
+        @media (max-width: 640px) {
+            .calendar-day {
+                font-size: 0.75rem;
+                padding: 4px;
+            }
+            
+            .today-box {
+                box-shadow: 0 4px 15px -3px rgba(79, 70, 229, 0.2), 0 2px 6px -1px rgba(79, 70, 229, 0.1);
             }
         }
     </style>
@@ -58,20 +150,20 @@
         
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <!-- Calendar Section -->
-            <div class="lg:col-span-2 bg-white rounded-xl shadow-md overflow-hidden">
+            <div class="lg:col-span-2 bg-white rounded-xl card-shadow overflow-hidden">
                 <div class="p-6">
                     <div class="flex justify-between items-center mb-6">
                         <h2 class="text-xl font-semibold text-gray-800" id="current-month-year"></h2>
                     </div>
                     
                     <div class="grid grid-cols-7 gap-2 mb-4">
-                        <div class="text-center font-medium text-gray-500">Sun</div>
-                        <div class="text-center font-medium text-gray-500">Mon</div>
-                        <div class="text-center font-medium text-gray-500">Tue</div>
-                        <div class="text-center font-medium text-gray-500">Wed</div>
-                        <div class="text-center font-medium text-gray-500">Thu</div>
-                        <div class="text-center font-medium text-gray-500">Fri</div>
-                        <div class="text-center font-medium text-gray-500">Sat</div>
+                        <div class="text-center font-medium text-gray-600">Sun</div>
+                        <div class="text-center font-medium text-gray-600">Mon</div>
+                        <div class="text-center font-medium text-gray-600">Tue</div>
+                        <div class="text-center font-medium text-gray-600">Wed</div>
+                        <div class="text-center font-medium text-gray-600">Thu</div>
+                        <div class="text-center font-medium text-gray-600">Fri</div>
+                        <div class="text-center font-medium text-gray-600">Sat</div>
                     </div>
                     
                     <div class="grid grid-cols-7 gap-2" id="calendar-grid">
@@ -81,24 +173,24 @@
             </div>
             
             <!-- Today's Action Section -->
-            <div class="bg-white rounded-xl shadow-md overflow-hidden">
+            <div class="bg-white rounded-xl card-shadow overflow-hidden">
                 <div class="p-6">
                     <div class="text-center mb-6">
                         <div class="text-4xl font-bold text-indigo-600" id="today-date"></div>
-                        <div class="text-lg font-medium text-gray-600" id="today-day"></div>
-                        <div class="text-gray-500 mt-1" id="today-year"></div>
+                        <div class="text-lg font-medium text-gray-700" id="today-day"></div>
+                        <div class="text-gray-600 mt-1" id="today-year"></div>
                     </div>
                     
                     <div class="flex justify-center">
-                        <button id="mark-button" class="px-6 py-3 rounded-lg font-medium text-white bg-indigo-600 hover:bg-indigo-700 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
+                        <button id="mark-button" class="btn-primary px-6 py-3 font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:bg-indigo-700">
                             Mark as Completed
                         </button>
                     </div>
                     
                     <div class="mt-8">
                         <h3 class="text-lg font-semibold text-gray-800 mb-4">Today's Note</h3>
-                        <textarea id="daily-note" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" rows="4" placeholder="Add a note about your day..."></textarea>
-                        <button id="save-note-button" class="mt-2 px-4 py-2 rounded-lg font-medium text-white bg-indigo-600 hover:bg-indigo-700 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
+                        <textarea id="daily-note" class="textarea-enhanced w-full p-3 border border-gray-300 resize-none" rows="4" placeholder="Add a note about your day..."></textarea>
+                        <button id="save-note-button" class="btn-primary mt-3 px-4 py-2 font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:bg-indigo-700">
                             Save Note
                         </button>
                     </div>
@@ -107,10 +199,10 @@
         </div>
         
         <!-- Activity Log Section -->
-        <div class="mt-10 bg-white rounded-xl shadow-md overflow-hidden">
+        <div class="mt-10 bg-white rounded-xl card-shadow overflow-hidden">
             <div class="p-6">
                 <h2 class="text-2xl font-semibold text-gray-800 mb-4">Activity Log</h2>
-                <div class="space-y-4" id="activity-log">
+                <div class="space-y-3" id="activity-log">
                     <!-- Log entries will be populated by JavaScript -->
                 </div>
             </div>
@@ -178,16 +270,16 @@
             // Add days of the month
             for (let i = 1; i <= daysInMonth; i++) {
                 const dayCell = document.createElement('div');
-                dayCell.className = 'calendar-day p-2 rounded-lg text-center cursor-pointer';
+                dayCell.className = 'calendar-day p-3 text-center cursor-pointer font-medium';
                 
                 // Check if this day is today
                 const thisDay = new Date(date.getFullYear(), date.getMonth(), i);
                 const dateKey = formatDateKey(thisDay);
                 
                 if (isSameDay(thisDay, today)) {
-                    dayCell.classList.add('today-box', 'bg-indigo-100', 'text-indigo-800', 'font-semibold');
+                    dayCell.classList.add('today-box', 'bg-indigo-100', 'text-indigo-800', 'font-bold');
                 } else {
-                    dayCell.classList.add('hover:bg-gray-100');
+                    dayCell.classList.add('hover:bg-gray-100', 'text-gray-700');
                 }
                 
                 // Check if this day is completed
@@ -221,7 +313,7 @@
                 markButton.disabled = true;
                 markButton.textContent = 'Completed Today';
                 markButton.classList.remove('bg-indigo-600', 'hover:bg-indigo-700');
-                markButton.classList.add('bg-green-600', 'cursor-not-allowed');
+                markButton.classList.add('bg-green-600', 'hover:bg-green-700', 'cursor-not-allowed');
             }
             
             // Load today's note if it exists
@@ -242,7 +334,7 @@
                 markButton.disabled = true;
                 markButton.textContent = 'Completed Today';
                 markButton.classList.remove('bg-indigo-600', 'hover:bg-indigo-700');
-                markButton.classList.add('bg-green-600', 'cursor-not-allowed');
+                markButton.classList.add('bg-green-600', 'hover:bg-green-700', 'cursor-not-allowed');
                 
                 // Update calendar
                 markCalendarDay(today);
@@ -287,7 +379,7 @@
         // Add entry to activity log
         function addToActivityLog(date, action) {
             const logEntry = document.createElement('div');
-            logEntry.className = 'log-entry p-3 bg-gray-50 rounded-lg';
+            logEntry.className = 'log-entry p-4 bg-gray-50 border border-gray-100';
             
             const dateStr = date.toLocaleDateString('en-US', { 
                 weekday: 'short', 
@@ -303,8 +395,8 @@
             
             logEntry.innerHTML = `
                 <div class="flex justify-between items-center">
-                    <span class="font-medium">${dateStr} at ${timeStr}</span>
-                    <span class="text-xs bg-indigo-100 text-indigo-800 px-2 py-1 rounded-full">${action}</span>
+                    <span class="font-medium text-gray-800">${dateStr} at ${timeStr}</span>
+                    <span class="text-xs bg-indigo-100 text-indigo-800 px-3 py-1 rounded-full font-medium">${action}</span>
                 </div>
             `;
             
